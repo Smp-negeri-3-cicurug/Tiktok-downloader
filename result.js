@@ -74,72 +74,55 @@ function hideLoading(button, originalHTML) {
     button.innerHTML = originalHTML;
 }
 
-// Universal download function - menggunakan download bawaan browser
+// Universal download function - langsung download tanpa fetch
 function downloadFile(url, filename, button) {
-    const originalHTML = button ? showLoading(button) : null;
-    
-    try {
-        showNotification('Memulai download...', 'info');
+    if (button) {
+        const originalHTML = showLoading(button);
         
-        // Buat link element untuk trigger download browser
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        showNotification('Download dimulai!', 'success');
-        
-        if (button && originalHTML) {
-            setTimeout(() => hideLoading(button, originalHTML), 1000);
-        }
-        
-    } catch (error) {
-        console.error('Download error:', error);
-        showNotification('Download gagal!', 'error');
-        
-        if (button && originalHTML) {
+        setTimeout(() => {
             hideLoading(button, originalHTML);
-        }
+        }, 1000);
     }
+    
+    showNotification('Download dimulai!', 'success');
+    
+    // Langsung buka URL untuk download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // Function to download video
 function downloadVideo(url, filename, event) {
     const button = event.target.closest('button');
+    showNotification('Download video dimulai!', 'success');
     downloadFile(url, filename, button);
 }
 
 // Function to download audio
 function downloadAudio(url, filename, event) {
     const button = event.target.closest('button');
+    showNotification('Download audio dimulai!', 'success');
     downloadFile(url, filename, button);
 }
 
 // Function to download single image
 function downloadSingleImage(url, index, event) {
-    const button = event ? event.target.closest('button') : null;
-    const filename = `tiktok-foto-${index}.jpg`;
+    showNotification(`Download foto ${index} dimulai!`, 'success');
     
     const link = document.createElement('a');
     link.href = url;
-    link.download = filename;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
+    link.download = `tiktok-foto-${index}.jpg`;
     link.style.display = 'none';
     
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    if (button) {
-        showNotification(`Foto ${index} sedang didownload...`, 'success');
-    }
 }
 
 // Function to download all images
@@ -313,4 +296,4 @@ if (!data) {
             </div>
         `;
     }
-}
+        }
