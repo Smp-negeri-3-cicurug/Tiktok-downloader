@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Downloader - Download Video Tanpa Watermark</title>
+    <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/KYjVHcHf/1761372755063-1.jpg">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/KYjVHcHf/1761372755063-1.jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">
+                <i class="fab fa-tiktok"></i>
+                TikTok Downloader
+            </h1>
+            <p class="subtitle">Download video TikTok tanpa watermark dengan mudah dan cepat</p>
+        </header>
+
+        <main class="main-content">
+            <div class="input-section">
+                <input 
+                    type="text" 
+                    id="urlInput" 
+                    placeholder="Paste link TikTok di sini... (https://vt.tiktok.com/xxxxx)"
+                >
+                <button class="btn btn-primary" id="downloadBtn">
+                    <i class="fas fa-download"></i> Download
+                </button>
+            </div>
+
+            <div id="loadingSection" class="loading-section" style="display: none;">
+                <div class="spinner"></div>
+                <p class="loading-text">Mengambil data video...</p>
+            </div>
+
+            <div id="messageSection" class="message-section" style="display: none;">
+                <p id="messageText" class="message-text"></p>
+            </div>
+        </main>
+
+        <section class="features">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Cepat & Mudah</h3>
+                    <p>Download video TikTok dalam hitungan detik tanpa ribet</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-water"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Tanpa Watermark</h3>
+                    <p>Dapatkan video berkualitas HD tanpa logo TikTok</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Gratis Selamanya</h3>
+                    <p>Tidak perlu registrasi atau biaya apapun</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="how-to-use">
+            <h2>Cara Menggunakan</h2>
+            <ol class="steps">
+                <li>
+                    <span class="step-number">1</span>
+                    <span class="step-text">Buka aplikasi TikTok dan pilih video yang ingin didownload</span>
+                </li>
+                <li>
+                    <span class="step-number">2</span>
+                    <span class="step-text">Tap tombol "Share" dan pilih "Copy Link"</span>
+                </li>
+                <li>
+                    <span class="step-number">3</span>
+                    <span class="step-text">Paste link di atas dan klik tombol "Download"</span>
+                </li>
+            </ol>
+        </section>
+
+        <footer class="footer">
+            <p>Made with <i class="fas fa-heart"></i> by Your Name</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
