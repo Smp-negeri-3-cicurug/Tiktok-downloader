@@ -20,27 +20,43 @@ export default async function handler(req, res) {
       throw new Error('Failed to fetch file');
     }
 
-    // Get content type
+    // Get content type dan size
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
+    const contentLength = response.headers.get('content-length');
     
-    // Convert response to buffer
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    
-    // Set headers untuk download
+    // Set headers untuk download dengan streaming
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Content-Length', buffer.length);
     
-    // Send buffer
-    return res.send(buffer);
+    if (contentLength) {
+      res.setHeader('Content-Length', contentLength);
+    }
+    
+    // STREAMING: Pipe response langsung tanpa buffer
+    // Ini bikin download langsung jalan dari 0KB!
+    const reader = response.body.getReader();
+    
+    while (true) {
+      const { done, value } = await reader.read();
+      
+      if (done) break;
+      
+      // Kirim chunk by chunk ke browser
+      res.write(Buffer.from(value));
+    }
+    
+    res.end();
     
   } catch (error) {
     console.error('Download error:', error);
-    return res.status(500).json({ 
-      error: 'Failed to download file',
-      message: error.message 
-    });
+    
+    // Kalau belum kirim response, kirim error
+    if (!res.headersSent) {
+      return res.status(500).json({ 
+        error: 'Failed to download file',
+        message: error.message 
+      });
+    }
   }
-      }
+          }
