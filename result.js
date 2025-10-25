@@ -1,5 +1,5 @@
 // =============================
-// RESULT PAGE LOGIC - ENHANCED
+// RESULT PAGE LOGIC - WITH PROXY
 // =============================
 const data = JSON.parse(sessionStorage.getItem('tiktokData'));
 const videoInfoCard = document.getElementById('videoInfoCard');
@@ -60,123 +60,60 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Show loading indicator
-function showLoading(button) {
-    const originalHTML = button.innerHTML;
-    button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
-    return originalHTML;
-}
-
-// Hide loading indicator
-function hideLoading(button, originalHTML) {
-    button.disabled = false;
-    button.innerHTML = originalHTML;
-}
-
-// Universal download function
-async function downloadFile(url, filename, button) {
-    const originalHTML = showLoading(button);
+// Universal download function - menggunakan Vercel API
+function downloadFile(url, filename) {
+    showNotification('Download dimulai! Cek browser download manager', 'success');
     
-    try {
-        showNotification('Memulai download...', 'info');
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error('Download gagal');
-        }
-        
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = filename;
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up
-        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
-        
-        showNotification('Download berhasil!', 'success');
-        hideLoading(button, originalHTML);
-        
-    } catch (error) {
-        console.error('Download error:', error);
-        showNotification('Download gagal. Mencoba metode alternatif...', 'error');
-        
-        // Fallback: open in new tab
-        window.open(url, '_blank');
-        hideLoading(button, originalHTML);
-    }
+    // Encode URL untuk query parameter
+    const encodedUrl = encodeURIComponent(url);
+    const encodedFilename = encodeURIComponent(filename);
+    
+    // Buat proxy URL untuk Vercel
+    const proxyUrl = `/api/download-proxy?url=${encodedUrl}&filename=${encodedFilename}`;
+    
+    // Langsung trigger download browser
+    const link = document.createElement('a');
+    link.href = proxyUrl;
+    link.download = filename;
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // Function to download video
 function downloadVideo(url, filename, event) {
-    const button = event.target.closest('button');
-    downloadFile(url, filename, button);
+    downloadFile(url, filename);
 }
 
 // Function to download audio
 function downloadAudio(url, filename, event) {
-    const button = event.target.closest('button');
-    downloadFile(url, filename, button);
+    downloadFile(url, filename);
 }
 
 // Function to download single image
 function downloadSingleImage(url, index, event) {
-    const button = event ? event.target.closest('button') : null;
     const filename = `tiktok-foto-${index}.jpg`;
-    
-    if (button) {
-        downloadFile(url, filename, button);
-    } else {
-        // For batch download
-        fetch(url)
-            .then(response => response.blob())
-            .then(blob => {
-                const blobUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(blobUrl);
-            })
-            .catch(error => {
-                console.error('Download error:', error);
-                window.open(url, '_blank');
-            });
-    }
+    showNotification(`Download foto ${index} dimulai!`, 'success');
+    downloadFile(url, filename);
 }
 
 // Function to download all images
 function downloadAllImages(event) {
     if (!data || !data.images) return;
     
-    const button = event.target.closest('button');
-    const originalHTML = showLoading(button);
-    
     showNotification(`Mendownload ${data.images.length} foto...`, 'info');
-    
-    let completed = 0;
     
     data.images.forEach((img, index) => {
         setTimeout(() => {
-            downloadSingleImage(img, index + 1);
-            completed++;
-            
-            if (completed === data.images.length) {
-                hideLoading(button, originalHTML);
-                showNotification('Semua foto berhasil didownload!', 'success');
-            }
+            downloadFile(img, `tiktok-foto-${index + 1}.jpg`);
         }, index * 500); // Delay 500ms per image
     });
+    
+    setTimeout(() => {
+        showNotification('Semua download dimulai!', 'success');
+    }, data.images.length * 500);
 }
 
 // Check if data exists
@@ -243,14 +180,11 @@ if (!data) {
             <div class="image-gallery">
                 ${data.images.map((img, index) => `
                     <div class="image-item">
-                        <img src="${img}" alt="Foto ${index + 1}" loading="lazy" decoding="async">
+                        <img src="${img}" alt="Foto ${index + 1}" loading="lazy" decoding="async" onclick="downloadSingleImage('${img}', ${index + 1}, event)" style="cursor: pointer;" title="Klik untuk download">
                         <div class="image-overlay">
-                            <button onclick="downloadSingleImage('${img}', ${index + 1}, event)" class="image-download-btn">
+                            <button onclick="downloadSingleImage('${img}', ${index + 1}, event)" class="image-download-btn" title="Download foto">
                                 <i class="fas fa-download"></i>
                             </button>
-                            <a href="${img}" target="_blank" class="image-preview-btn">
-                                <i class="fas fa-eye"></i>
-                            </a>
                         </div>
                         <div class="image-number">${index + 1}</div>
                     </div>
@@ -332,4 +266,4 @@ if (!data) {
             </div>
         `;
     }
-    }
+}
