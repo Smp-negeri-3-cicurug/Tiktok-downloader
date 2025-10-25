@@ -74,45 +74,24 @@ function hideLoading(button, originalHTML) {
     button.innerHTML = originalHTML;
 }
 
-// Universal download function
-async function downloadFile(url, filename, button) {
-    const originalHTML = showLoading(button);
-    
-    try {
-        showNotification('Memulai download...', 'info');
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error('Download gagal');
-        }
-        
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = filename;
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up
-        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
-        
-        showNotification('Download berhasil!', 'success');
-        hideLoading(button, originalHTML);
-        
-    } catch (error) {
-        console.error('Download error:', error);
-        showNotification('Download gagal. Mencoba metode alternatif...', 'error');
-        
-        // Fallback: open in new tab
-        window.open(url, '_blank');
-        hideLoading(button, originalHTML);
+// Universal download function - langsung download tanpa fetch
+function downloadFile(url, filename, button) {
+    if (button) {
+        const originalHTML = showLoading(button);
+        setTimeout(() => hideLoading(button, originalHTML), 1000);
     }
+    
+    showNotification('Download dimulai!', 'success');
+    
+    // Langsung trigger download browser
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // Function to download video
@@ -129,30 +108,25 @@ function downloadAudio(url, filename, event) {
 
 // Function to download single image
 function downloadSingleImage(url, index, event) {
-    const button = event ? event.target.closest('button') : null;
     const filename = `tiktok-foto-${index}.jpg`;
+    const button = event ? event.target.closest('button') : null;
     
     if (button) {
-        downloadFile(url, filename, button);
-    } else {
-        // For batch download
-        fetch(url)
-            .then(response => response.blob())
-            .then(blob => {
-                const blobUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(blobUrl);
-            })
-            .catch(error => {
-                console.error('Download error:', error);
-                window.open(url, '_blank');
-            });
+        const originalHTML = showLoading(button);
+        setTimeout(() => hideLoading(button, originalHTML), 1000);
     }
+    
+    showNotification(`Download foto ${index} dimulai!`, 'success');
+    
+    // Langsung trigger download browser
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // Function to download all images
@@ -164,19 +138,23 @@ function downloadAllImages(event) {
     
     showNotification(`Mendownload ${data.images.length} foto...`, 'info');
     
-    let completed = 0;
-    
     data.images.forEach((img, index) => {
         setTimeout(() => {
-            downloadSingleImage(img, index + 1);
-            completed++;
+            const link = document.createElement('a');
+            link.href = img;
+            link.download = `tiktok-foto-${index + 1}.jpg`;
+            link.style.display = 'none';
             
-            if (completed === data.images.length) {
-                hideLoading(button, originalHTML);
-                showNotification('Semua foto berhasil didownload!', 'success');
-            }
-        }, index * 500); // Delay 500ms per image
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }, index * 300); // Delay 300ms per image
     });
+    
+    setTimeout(() => {
+        hideLoading(button, originalHTML);
+        showNotification('Semua foto berhasil didownload!', 'success');
+    }, data.images.length * 300 + 500);
 }
 
 // Check if data exists
@@ -243,14 +221,11 @@ if (!data) {
             <div class="image-gallery">
                 ${data.images.map((img, index) => `
                     <div class="image-item">
-                        <img src="${img}" alt="Foto ${index + 1}" loading="lazy" decoding="async">
+                        <img src="${img}" alt="Foto ${index + 1}" loading="lazy" decoding="async" onclick="downloadSingleImage('${img}', ${index + 1}, event)" style="cursor: pointer;" title="Klik untuk download">
                         <div class="image-overlay">
-                            <button onclick="downloadSingleImage('${img}', ${index + 1}, event)" class="image-download-btn">
+                            <button onclick="downloadSingleImage('${img}', ${index + 1}, event)" class="image-download-btn" title="Download foto">
                                 <i class="fas fa-download"></i>
                             </button>
-                            <a href="${img}" target="_blank" class="image-preview-btn">
-                                <i class="fas fa-eye"></i>
-                            </a>
                         </div>
                         <div class="image-number">${index + 1}</div>
                     </div>
@@ -332,4 +307,4 @@ if (!data) {
             </div>
         `;
     }
-    }
+                              }
